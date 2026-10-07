@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>极光云 · 用户控制面板</title>
+<link rel="icon" href="/favicon.ico" />
+<link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<div class="app-shell">
+  <!-- 顶栏 -->
+  <header class="app-topbar">
+    <button type="button" class="btn btn-ghost btn-sm burger" id="nav-burger" aria-label="菜单">☰</button>
+    <a href="./" class="logo"><span class="logo-mark">极</span>极光云</a>
+    <div class="topbar-title" id="topbar-title">用户中心</div>
+    <div class="topbar-actions">
+      <div class="theme-switch btn-sm" id="theme-switch"></div>
+      <a href="#/profile" class="user-chip"><span class="dot"></span><span id="nav-user">用户</span></a>
+    </div>
+  </header>
+
+  <div class="layout" id="layout">
+    <!-- 侧边栏(分组) -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-scroll">
+        <div class="sidebar-group">
+          <div class="section-label">概览</div>
+          <a href="#/dashboard" data-sp-nav="dashboard">📊 仪表盘</a>
+          <a href="#/docs" data-sp-nav="docs">📚 使用文档</a>
+          <a href="#/notifications" data-sp-nav="notifications">🔔 站内消息</a>
+        </div>
+        <div class="sidebar-group">
+          <div class="section-label">订阅</div>
+          <a href="#/subscription" data-sp-nav="subscription">📦 我的订阅</a>
+          <a href="#/wallet" data-sp-nav="wallet">🛒 充值购买</a>
+          <a href="#/nodes" data-sp-nav="nodes">🌍 节点状态</a>
+        </div>
+        <div class="sidebar-group">
+          <div class="section-label">财务</div>
+          <a href="#/orders" data-sp-nav="orders">🧾 我的订单</a>
+          <a href="#/wallet" data-sp-nav="wallet">💰 充值中心</a>
+          <a href="#/invite" data-sp-nav="invite">🔗 我的邀请</a>
+        </div>
+        <div class="sidebar-group">
+          <div class="section-label">用户</div>
+          <a href="#/profile" data-sp-nav="profile">👤 个人中心</a>
+          <a href="#/traffic" data-sp-nav="traffic">📡 流量明细</a>
+          <a href="#/tickets" data-sp-nav="tickets">🎫 我的工单</a>
+        </div>
+        <div class="sidebar-group">
+          <a href="javascript:void(0)" id="btn-logout">🚪 退出登录</a>
+        </div>
+      </div>
+    </aside>
+    <div class="sidebar-mask" id="sidebar-mask"></div>
+
+    <main class="main" id="page-main">加载中…</main>
+  </div>
+</div>
+
+<script src="/js/config.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/router.js"></script>
+<script src="/js/theme.js"></script>
+<script src="/js/dashboard.js"></script>
+<script>
+  (function () {
+    // 统一主题
+    window.SiteTheme.init("#theme-switch");
+
+    // 侧边栏抽屉(移动端)
+    var sidebar = document.getElementById("sidebar");
+    var layout = document.getElementById("layout");
+    var burger = document.getElementById("nav-burger");
+    var mask = document.getElementById("sidebar-mask");
+    function setSidebar(open) { layout.classList.toggle("sidebar-open", open); }
+    if (burger) burger.addEventListener("click", function () { setSidebar(true); });
+    if (mask) mask.addEventListener("click", function () { setSidebar(false); });
+
+    // 导航用户态
+    function refreshNav() {
+      var token = window.JCAPI.getToken();
+      var chip = document.getElementById("nav-user");
+      if (token) {
+        try {
+          var u = JSON.parse(atob(token.split(".")[1]));
+          chip.textContent = u.email || "用户";
+        } catch (e) { chip.textContent = "用户"; }
+      } else { chip.textContent = ""; }
+    }
+
+    // 侧边栏高亮 + 顶栏标题，随路由变化
+    function onRouteChange() {
+      var path = (location.hash.split("?")[0] || "/").replace(/^#/, "");
+      var links = document.querySelectorAll("[data-sp-nav]");
+      links.forEach(function (a) {
+        var match = a.dataset.spNav;
+        var active = path.indexOf(match) === 1; // #/xxx -> /xxx
+        a.classList.toggle("active", path === "/" + match);
+      });
+      setSidebar(false);
+      refreshNav();
+    }
+
+    refreshNav();
+    window.addEventListener("hashchange", onRouteChange);
+    onRouteChange();
+
+    var logoutBtn = document.getElementById("btn-logout");
+    if (logoutBtn) logoutBtn.addEventListener("click", function () {
+      window.JCAPI.setToken("");
+      location.href = "./";
+    });
+
+    // 默认首页
+    window.__SP__.on("/", function (path, qs, render) {
+      if (!window.JCAPI.getToken()) { location.href = "./"; return; }
+      location.hash = "#/dashboard";
+    });
+    window.__SP__.onHashChange();
+  })();
+</script>
+</body>
+</html>

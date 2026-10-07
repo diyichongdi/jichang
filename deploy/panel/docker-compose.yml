@@ -1,0 +1,39 @@
+# ============================================================
+#  Xboard 机场面板 · Docker Compose
+#  部署目录建议：/opt/xboard
+#  适用：面板服务器(海外 VPS, 1C1G+)
+# ============================================================
+version: '3.8'
+
+services:
+  xboard:
+    image: ghcr.io/cedar2025/xboard:latest
+    container_name: xboard
+    restart: unless-stopped
+    environment:
+      - docker=true
+    ports:
+      # 只绑定本机回环，由 Nginx/Caddy 反代对外，避免直接暴露
+      - "127.0.0.1:7001:7001"
+    volumes:
+      - ./.env:/www/.env
+    depends_on:
+      - mariadb
+      - redis
+
+  mariadb:
+    image: mariadb:10.11
+    container_name: xboard-mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: "${DB_PASSWORD:?请在 .env 里设置 DB_PASSWORD}"
+      MARIADB_DATABASE: xboard
+    volumes:
+      - ./mariadb-data:/var/lib/mysql
+
+  redis:
+    image: redis:7.0-alpine
+    container_name: xboard-redis
+    restart: unless-stopped
+    volumes:
+      - ./redis-data:/data

@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Database
+app/data/*.db
+app/data/*.db-journal
+app/data/*.db-wal
+app/data/*.db-shm
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+app/server.out.log
+app/server.err.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+
+# Runtime / temp
+tmp/
+temp/
+*.tmp
+
+# AI 会话导出与测试产物（含私人对话，勿提交公开仓库）
+jichang.json
+.playwright-cli/

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>极光云 · 管理后台</title>
+<link rel="icon" href="/favicon.ico" />
+<link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<div class="app-shell admin-shell">
+  <!-- 顶栏 -->
+  <header class="app-topbar">
+    <button type="button" class="btn btn-ghost btn-sm burger" id="nav-burger" aria-label="菜单">☰</button>
+    <button type="button" class="btn btn-ghost btn-sm sidebar-toggle-btn" id="sidebar-toggle" aria-label="收起/展开">⏸</button>
+    <a href="#/stats" class="logo"><span class="logo-mark">极</span>极光云 · 管理</a>
+    <div class="topbar-title" id="topbar-title">后台</div>
+    <div class="topbar-actions">
+      <div class="theme-switch btn-sm" id="theme-switch"></div>
+      <a href="#/profile" class="user-chip"><span class="dot"></span><span id="nav-user">管理员</span></a>
+    </div>
+  </header>
+
+  <div class="layout" id="layout">
+    <!-- 侧边栏(窄, 可折叠) -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-scroll">
+        <div class="sidebar-group">
+          <div class="section-label">运营</div>
+          <a href="#/stats" data-sp-nav="stats">📊 统计总览</a>
+          <a href="#/orders" data-sp-nav="orders">🧾 订单管理</a>
+          <a href="#/notices" data-sp-nav="notices">📢 公告管理</a>
+          <a href="#/tickets" data-sp-nav="tickets">🎫 工单处理</a>
+        </div>
+        <div class="sidebar-group">
+          <div class="section-label">内容与套餐</div>
+          <a href="#/site" data-sp-nav="site">🖌️ 站点内容</a>
+          <a href="#/plans" data-sp-nav="plans">📦 套餐管理</a>
+          <a href="#/nodes-mgmt" data-sp-nav="nodes-mgmt">🗺️ 节点管理</a>
+        </div>
+        <div class="sidebar-group">
+          <div class="section-label">财务</div>
+          <a href="#/finance/payments" data-sp-nav="finance">💳 支付流水</a>
+          <a href="#/finance/wallet" data-sp-nav="wallet-records">💵 钱包流水</a>
+          <a href="#/finance/commissions" data-sp-nav="commissions">🤝 返佣明细</a>
+          <a href="#/coupons" data-sp-nav="coupons">🎟️ 优惠码</a>
+          <a href="#/cards" data-sp-nav="cards">💳 卡密管理</a>
+        </div>
+        <div class="sidebar-group">
+          <div class="section-label">系统</div>
+          <a href="#/users" data-sp-nav="users">👥 用户管理</a>
+          <a href="#/settings" data-sp-nav="settings">⚙️ 系统设置</a>
+          <a href="#/perms" data-sp-nav="perms">🔐 权限管理</a>
+        </div>
+        <div class="sidebar-group">
+          <a href="javascript:void(0)" id="btn-logout">🚪 退出登录</a>
+        </div>
+      </div>
+    </aside>
+    <div class="sidebar-mask" id="sidebar-mask"></div>
+
+    <main class="main" id="page-main">加载中…</main>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/router.js"></script>
+<script src="/js/theme.js"></script>
+<script src="/js/admin.js"></script>
+<script>
+  (function () {
+    // 统一主题
+    window.SiteTheme.init("#theme-switch");
+
+    // 侧边栏抽屉(移动端) + 折叠(桌面)
+    var sidebar = document.getElementById("sidebar");
+    var layoutEl = document.getElementById("layout");
+    var burger = document.getElementById("nav-burger");
+    var toggle = document.getElementById("sidebar-toggle");
+    var mask = document.getElementById("sidebar-mask");
+    function setSidebar(open) { layoutEl.classList.toggle("sidebar-open", open); }
+    if (burger) burger.addEventListener("click", function () { setSidebar(true); });
+    if (mask) mask.addEventListener("click", function () { setSidebar(false); });
+    if (toggle) toggle.addEventListener("click", function () { layoutEl.classList.toggle("sidebar-collapsed"); });
+
+    function refreshNav() {
+      var token = window.JCAPI.getToken();
+      var chip = document.getElementById("nav-user");
+      if (token) {
+        try {
+          var u = JSON.parse(atob(token.split(".")[1]));
+          chip.textContent = u.role === "admin" ? "管理员" : (u.email || "用户");
+        } catch (e) { chip.textContent = "管理员"; }
+      } else { chip.textContent = ""; }
+    }
+
+    function onRouteChange() {
+      var path = (location.hash.split("?")[0] || "/").replace(/^#/, "");
+      document.querySelectorAll("[data-sp-nav]").forEach(function (a) {
+        var match = a.dataset.spNav;
+        var active = path === "/" + match ||
+          (match === "finance" && path.indexOf("/finance/") === 0);
+        var name = active ? (match === "stats" ? "统计总览" : a.textContent.trim()) : "";
+        a.classList.toggle("active", active);
+        if (active) document.getElementById("topbar-title").textContent = name;
+      });
+      setSidebar(false);
+      refreshNav();
+    }
+
+    refreshNav();
+    window.addEventListener("hashchange", onRouteChange);
+    onRouteChange();
+
+    var logoutBtn = document.getElementById("btn-logout");
+    if (logoutBtn) logoutBtn.addEventListener("click", function () {
+      window.JCAPI.setToken("");
+      location.href = "./";
+    });
+
+    // 默认路由
+    window.__SP__.on("/", function (path, qs, render) {
+      if (!window.JCAPI.getToken()) { location.href = "./"; return; }
+      location.hash = "#/stats";
+    });
+    window.__SP__.onHashChange();
+  })();
+</script>
+</body>
+</html>

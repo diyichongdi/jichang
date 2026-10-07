@@ -1,0 +1,53 @@
+# ============================================================
+#  XrayR 节点后端配置模板 (对接 Xboard)
+#  部署目录：/opt/xrayr ，复制为 config.yml
+#  字段来源：面板后台 -> 节点管理 -> 添加/编辑节点
+# ============================================================
+
+Log:
+  Level: info          # debug / info / warn / error
+  AccessPath: ./access.log
+  ErrorPath: ./error.log
+
+Nodeneeded: true
+
+DnsConfigPath:          # 可选，域名解析用 (留空即可)
+
+InboundConfig:
+  - Port: 443           # 节点对外端口，与面板后台节点端口一致
+    Protocol: vless     # SS / SSR / trojan / vmess / vless / shadowsocks-plugin / hysteria2
+    Settings:
+      Network: tcp
+      EnableVless: true
+      Udp: true
+      VlessFlow: ""      # xtls-rprx-vision (Reality) 时填
+    SniffingConfig:
+      Enabled: true
+      DestOverride:
+        - http
+        - tls
+
+ControllerConfig:
+  ListenIP: 0.0.0.0
+  SendIP: 0.0.0.0
+  UpdatePeriodic: 60     # 秒
+  EnableProxyProtocol: false
+
+Nodes:
+  - PanelType: "NewV2board"            # Xboard/V2Board 用 NewV2board
+    ApiConfig:
+      ApiHost: "https://xboard.example.com"   # 你的面板域名
+      ApiKey: "COMM_MIGRATION_KEY_FROM_PANEL" # 面板后台节点配置里的通讯密钥
+      NodeID: 1                          # 面板后台节点的 ID
+      NodeType: Vless                    # 与面板节点保持一致
+      Timeout: 30
+      EnableVless: true
+      VlessFlow: ""                      # 用 Reality 时填 xtls-rprx-vision
+      SpeedLimit: 0                      # Mbps，0=不限
+      DeviceLimit: 0                     # 0=不限
+    ControllerConfig:
+      ListenIP: 0.0.0.0
+      SendIP: 0.0.0.0
+      UpdatePeriodic: 60
+      EnableDNS: true
+      DisableCustomConfig: true

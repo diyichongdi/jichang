@@ -1,0 +1,16 @@
+# ============================================================
+#  XrayR 节点后端 · Docker Compose
+#  部署目录：/opt/xrayr
+#  用法：cp config.yml.example config.yml 后填写
+# ============================================================
+version: '3.8'
+
+services:
+  xrayr:
+    image: ghcr.io/xrayr-project/xrayr:latest
+    container_name: xrayr
+    restart: unless-stopped
+    network_mode: host          # 节点需直通公网端口，用 host 网络
+    volumes:
+      - ./config.yml:/etc/XrayR/config.yml
+      - ./logs:/etc/XrayR/logs

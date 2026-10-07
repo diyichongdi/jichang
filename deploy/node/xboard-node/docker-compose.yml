@@ -1,0 +1,16 @@
+# ============================================================
+#  Xboard-Node 节点后端 · Docker Compose
+#  部署目录：/opt/xboard-node
+#  用法：cp config.yml.example config.yml 后填写
+# ============================================================
+version: '3.8'
+
+services:
+  xboard-node:
+    image: ghcr.io/cedar2025/xboard-node:latest
+    container_name: xboard-node
+    restart: unless-stopped
+    network_mode: host          # 节点需直通公网端口
+    volumes:
+      - ./config.yml:/etc/xboard-node/config.yml
+      - ./certs:/etc/xboard-node/certs
